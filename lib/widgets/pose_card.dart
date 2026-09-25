@@ -25,6 +25,7 @@ class PoseCard extends StatelessWidget {
         children: [
           PosePlaceholderImage(
             imageAsset: pose.imageAsset,
+            imageUrl: pose.imageUrl,
             borderRadius: BorderRadius.circular(14),
           ),
           // Subtle bottom gradient so the label stays readable.

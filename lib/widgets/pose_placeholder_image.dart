@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 
-/// Displays the real pose image if the asset exists, otherwise falls
-/// back to a simple stylized placeholder so the UI still looks
-/// intentional before real pose photography is added.
+/// Displays a pose image from whichever source is available:
+/// a remote [imageUrl] (Pexels) first, then a local [imageAsset],
+/// then a neutral placeholder icon if neither loads.
 class PosePlaceholderImage extends StatelessWidget {
   final String imageAsset;
+  final String? imageUrl;
   final BorderRadius borderRadius;
 
   const PosePlaceholderImage({
     super.key,
-    required this.imageAsset,
+    this.imageAsset = '',
+    this.imageUrl,
     this.borderRadius = BorderRadius.zero,
   });
 
@@ -26,21 +28,50 @@ class PosePlaceholderImage extends StatelessWidget {
             colors: [AppColors.surfaceLight, AppColors.surface],
           ),
         ),
-        child: Image.asset(
-          imageAsset,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            // Asset not bundled yet — show a neutral placeholder icon
-            // instead of crashing or showing Flutter's default error box.
-            return const Center(
-              child: Icon(
-                Icons.person_outline,
-                color: AppColors.textSecondary,
-                size: 40,
+        child: _buildImage(),
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      return Image.network(
+        imageUrl!,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return const Center(
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.gold,
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) => _fallbackIcon(),
+      );
+    }
+
+    if (imageAsset.isNotEmpty) {
+      return Image.asset(
+        imageAsset,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _fallbackIcon(),
+      );
+    }
+
+    return _fallbackIcon();
+  }
+
+  Widget _fallbackIcon() {
+    return const Center(
+      child: Icon(
+        Icons.person_outline,
+        color: AppColors.textSecondary,
+        size: 40,
       ),
     );
   }
