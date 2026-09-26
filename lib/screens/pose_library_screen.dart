@@ -72,6 +72,18 @@ class _PoseLibraryScreenState extends State<PoseLibraryScreen> {
     setState(() {}); // updates the clear button visibility immediately
   }
 
+  /// Clears the search field and immediately reverts to the local pose
+  /// grid, without waiting out the debounce used for typed input.
+  void _clearSearch() {
+    _debounce?.cancel();
+    _searchController.clear();
+    setState(() {
+      _status = _LibraryStatus.browsingLocal;
+      _selectedCategory = null;
+      _results = [];
+    });
+  }
+
   void _onCategoryTap(String category) {
     _debounce?.cancel();
     final isSame = _selectedCategory == category;
@@ -200,10 +212,7 @@ class _PoseLibraryScreenState extends State<PoseLibraryScreen> {
                 ? null
                 : IconButton(
                     icon: const Icon(Icons.close, color: AppColors.textSecondary),
-                    onPressed: () {
-                      _searchController.clear();
-                      _onSearchChanged('');
-                    },
+                    onPressed: _clearSearch,
                   ),
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(vertical: 14),
